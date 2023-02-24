@@ -23,3 +23,11 @@ DNS查询链路网络拥塞，请检查CDN智能DNS配置:  (1672427927, 124)
 DNS查询链路网络拥塞，请检查CDN智能DNS配置:  (1672452525, 857) 
 DNS查询链路网络拥塞，请检查CDN智能DNS配置:  (1672473227, 792)
 '''
+
+
+# mxtroubleshoot
+
+from dnstroubleshoot import mxtroubleshoot
+dect = mxtroubleshoot.mxtroubleshoot()
+for index,row in test.iterrows():
+    dect.detect(row)
