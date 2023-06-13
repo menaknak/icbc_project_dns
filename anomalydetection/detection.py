@@ -1,8 +1,5 @@
-import os
-import json
 import numpy as np
 import time
-from dataagg import aggregation
 
 
 class timingdetection:

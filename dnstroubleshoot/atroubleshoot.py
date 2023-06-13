@@ -22,15 +22,15 @@ class atroubleshoot:
         tooBig, tooSmall = self.detector.gaussDetect(tuples)
         return (tooBig, tooSmall)
     
-    def check_resolved_ip(data):  
-        ans = str(base64.b64decode(data['answers']))
-        if 'CNAME' in ans: return True # 如果解析出来CNAME链，则是CDN分配的边缘服务器，属于正常情况
-        ips = data['ips'].split(';')
-        ips.pop()
-        for ip in ips:
-            if ip not in ipdic[data['domain']]: #ipdic是所有域名下的白名单IP
-                return False #DNS劫持
-        return True
+    # def check_resolved_ip(data):  
+    #     ans = str(base64.b64decode(data['answers']))
+    #     if 'CNAME' in ans: return True # 如果解析出来CNAME链，则是CDN分配的边缘服务器，属于正常情况
+    #     ips = data['ips'].split(';')
+    #     ips.pop()
+    #     for ip in ips:
+    #         if ip not in ipdic[data['domain']]: #ipdic是所有域名下的白名单IP
+    #             return False #DNS劫持
+    #     return True
 
     def detect(self, datas):
         '''
@@ -46,7 +46,6 @@ class atroubleshoot:
         '''
         CL_tooBig, CL_tooSmall = self.anomaly_detect(datas,"nxd_1")
         CT_tooBig, CT_tooSmall = self.anomaly_detect(datas,"adns_2_latency")
-        print(CT_tooBig)
         CLTCDN_tooBig, CLTCDN_tooSmall = self.anomaly_detect(datas,"query_time")
 
         #for data in datas: # 这个不能直接这么遍历，对于DataFrame对象，要 iterrows

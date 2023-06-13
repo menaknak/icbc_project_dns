@@ -3,14 +3,20 @@ import json
 import time
 import base64
 import numpy as np
-from cachedipinfo import fastwhois
+from cachedipinfo import dnsfastwhois as fastwhois
+# from cachedipinfo import fastwhois
+
 import pandas as pd
-from database import dnsdatabase
+from dnsdatabase import dnsdatabase
+
+
 
 
 
 class dnsaggregation:
-    def __init__(self, datauri, alldata=False, starttime=-1, endtime=-1, interval=300, targethosts=[], targetips=[]):
+    def __init__(self, datauri, alldata=True, starttime=-1, endtime=-1, interval=300, targethosts=[], targetips=[]):
+
+
         '''
         Parameters:
             datauri: 数据json文件位置
@@ -22,9 +28,9 @@ class dnsaggregation:
             targetips: 重点观察的ip
 
         '''
-        #self.whois = fastwhois.fastwhois()
+        # self.whois = fastwhois.fastwhois()
         self.regions = ["黑龙江","吉林","辽宁","河北","甘肃","青海","陕西","河南","山东","山西","安徽","湖北","湖南","江苏","四川","贵州","云南",\
-        "浙江","江西","广东","福建","海南","新疆","内蒙古","宁夏","广西","西藏","北京","上海","天津","重庆"]
+        "浙江","江西","广东","福建","海南","新疆","内蒙古","宁夏","广西","西藏","北京","上海","天津","重庆",'Unknown']
         self.metrics = [["all_time","query_time","nxd_1","adns_2_latency"]]
         self.starttime = starttime
         self.endtime = endtime
@@ -41,7 +47,7 @@ class dnsaggregation:
         self.targetips = targetips
         self.data = []
         
-    def loadData(self, ):
+    def loadData(self):
         '''
         如果是"all_data" 直接读json文件，返回
         如果是其他，会根据starttime endtime 筛选出一段数据
@@ -50,7 +56,7 @@ class dnsaggregation:
         if self.starttime > self.endtime:
             print("Warning: start time is greater than end time.")
             return []
-        client = dnsdatabase(self.datauri)
+        client = dnsdatabase.dnsdatabase(self.datauri)
         
         if self.alldata:
             tmp = client.dnsfiledata()
@@ -61,7 +67,7 @@ class dnsaggregation:
                 tmp = tmp[tmp['monitor'].isin(self.targetips)]
             tmp = tmp.loc[self.starttime:self.endtime]
         whois = fastwhois.fastwhois()
-        tmp['region'] = tmp['monitor'].map(lambda ip: whois.query(ip)["geo"])
+        tmp['region'] = tmp['monitor'].map(lambda ip: whois.query(ip)["geo"] if isinstance(whois.query(ip), dict) else "Unknown")
         self.data = tmp[:]
         #return self.data
     
@@ -74,7 +80,8 @@ class dnsaggregation:
             return ts - ts%interval + interval//2
         if not self.isload:
             self.loadData()
-        tmp = self.data[self.data['region'].str.contains(region)]
+        tmp = self.data.fillna({'region': 'Unknown'})
+        tmp = tmp[tmp['region'].str.contains(region)]
         whois.update()
         return tmp
     
